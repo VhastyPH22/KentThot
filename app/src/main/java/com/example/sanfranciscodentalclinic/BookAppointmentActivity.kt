@@ -2,6 +2,8 @@ package com.example.sanfranciscodentalclinic
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,8 +18,10 @@ class BookAppointmentActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBookAppointmentBinding
     private lateinit var auth: FirebaseAuth
     private val calendar = Calendar.getInstance()
+    
+    private val procedures = arrayOf("Cleaning", "Whitening", "Extraction", "Consultation", "Root Canal", "Filling", "Braces Adjustment", "Dental X-Ray")
 
-    private val DB_URL = "https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app"
+    val appointmentsRef = FirebaseDatabase.getInstance("https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Appointments")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +30,10 @@ class BookAppointmentActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
+        binding.btnBack.setOnClickListener { finish() }
+
         setupSpinners()
+        updatePriceDisplay()
 
         binding.btnSelectDate.setOnClickListener {
             showDatePicker()
@@ -41,12 +48,29 @@ class BookAppointmentActivity : AppCompatActivity() {
         // Time Spinner
         val timeSlots = arrayOf("09:00 AM", "10:00 AM", "11:00 AM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM")
         val timeAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, timeSlots)
+        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerTime.adapter = timeAdapter
 
-        // Procedure Spinner
-        val procedures = arrayOf("Cleaning", "Whitening", "Extraction", "Consultation", "Root Canal")
-        val procedureAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, procedures)
+        // Procedure Spinner with prices
+        val proceduresWithPrices = procedures.map { 
+            "$it - ₱${String.format("%.2f", ProcedurePrices.getPrice(it))}"
+        }.toTypedArray()
+        val procedureAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, proceduresWithPrices)
+        procedureAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerProcedure.adapter = procedureAdapter
+        
+        binding.spinnerProcedure.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                updatePriceDisplay()
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+    
+    private fun updatePriceDisplay() {
+        val selectedProcedure = procedures[binding.spinnerProcedure.selectedItemPosition]
+        val price = ProcedurePrices.getPrice(selectedProcedure)
+        binding.tvEstimatedPrice.text = "₱${String.format("%.2f", price)}"
     }
 
     private fun showDatePicker() {
@@ -56,14 +80,17 @@ class BookAppointmentActivity : AppCompatActivity() {
             calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
             updateDateInView()
         }
-
-        DatePickerDialog(
+        
+        // Set minimum date to today
+        val datePicker = DatePickerDialog(
             this,
             dateSetListener,
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
+        )
+        datePicker.datePicker.minDate = System.currentTimeMillis() - 1000
+        datePicker.show()
     }
 
     private fun updateDateInView() {
@@ -86,9 +113,8 @@ class BookAppointmentActivity : AppCompatActivity() {
         }
 
         val selectedTime = binding.spinnerTime.selectedItem.toString()
-        val selectedProcedure = binding.spinnerProcedure.selectedItem.toString()
+        val selectedProcedure = procedures[binding.spinnerProcedure.selectedItemPosition]
 
-        val appointmentsRef = FirebaseDatabase.getInstance(DB_URL).getReference("Appointments")
         val appointmentId = appointmentsRef.push().key
 
         if (appointmentId == null) {

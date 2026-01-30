@@ -15,7 +15,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
-    private val DB_URL = "https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,8 +44,14 @@ class MainActivity : AppCompatActivity() {
         binding.btnForgotPassword.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             if (email.isNotEmpty()) {
-                // TODO: Add Firebase password reset logic
-                Toast.makeText(this, "Reset link sent to $email", Toast.LENGTH_SHORT).show()
+                auth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            Toast.makeText(this, "Reset link sent to $email", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(this, "Failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
             } else {
                 Toast.makeText(this, "Enter your email first to reset password", Toast.LENGTH_SHORT).show()
             }
@@ -60,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun fetchUserRoleAndRedirect() {
         val uid = auth.currentUser?.uid ?: return
-        val userRef = FirebaseDatabase.getInstance(DB_URL).getReference("Users").child(uid)
+        val userRef = FirebaseDatabase.getInstance("https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users").child(uid)
 
         userRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -69,6 +74,7 @@ class MainActivity : AppCompatActivity() {
 
                 val intent = when (role) {
                     "patient" -> Intent(this@MainActivity, DashboardActivity::class.java)
+                    "admin" -> Intent(this@MainActivity, AdminDashboardActivity::class.java)
                     "assistant" -> Intent(this@MainActivity, AssistantDashboardActivity::class.java)
                     "dentist" -> Intent(this@MainActivity, DentistDashboardActivity::class.java)
                     else -> {

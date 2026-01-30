@@ -12,6 +12,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Back"
+            android:layout_marginBottom="8dp"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -23,10 +32,12 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Select Date"            android:textSize="16sp"/>
+            android:text="Select Date"
+            android:textSize="16sp"/>
 
         <Button
             android:id="@+id/btnSelectDate"
+            style="?attr/materialButtonOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Select Date"/>
@@ -60,8 +71,42 @@
         <Spinner
             android:id="@+id/spinnerProcedure"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginBottom="24dp"/>
+            android:layout_height="48dp"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="2dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="#E8F5E9">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="Estimated Price:"
+                    android:textSize="16sp"/>
+
+                <TextView
+                    android:id="@+id/tvEstimatedPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₱500.00"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/teal_700"/>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
 
         <Button
             android:id="@+id/btnSubmitAppointment"

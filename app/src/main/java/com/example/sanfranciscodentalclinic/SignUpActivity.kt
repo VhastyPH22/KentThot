@@ -161,8 +161,19 @@ class SignUpActivity : AppCompatActivity() {
     private fun saveUserToDatabase(uid: String?, firstName: String, lastName: String, email: String, phone: String, dateOfBirth: String, gender: String) {
         if (uid == null) return
 
-        val database = FirebaseDatabase.getInstance().getReference("Patients")
-        val userObject = Patient(uid, firstName, lastName, email, "+639$phone", dateOfBirth, gender)
+        val database = FirebaseDatabase.getInstance("https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users")
+        val userObject = Patient(
+            uid = uid,
+            firstName = firstName,
+            lastName = lastName,
+            email = email,
+            phone = "+639$phone",
+            dateOfBirth = dateOfBirth,
+            gender = gender,
+            role = "patient",
+            pendingBalance = 0.0,
+            createdAt = System.currentTimeMillis()
+        )
 
         Log.d(TAG, "Step 3: Sending data object to Firebase...")
 

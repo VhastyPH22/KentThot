@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_admin_dashboard"
+            android:icon="@drawable/ic_dashboard"
+            android:title="Dashboard" />
+        <item
+            android:id="@+id/nav_manage_users"
+            android:icon="@android:drawable/ic_menu_myplaces"
+            android:title="Manage Users" />
+        <item
+            android:id="@+id/nav_all_appointments"
+            android:icon="@android:drawable/ic_menu_agenda"
+            android:title="All Appointments" />
+        <item
+            android:id="@+id/nav_reports"
+            android:icon="@android:drawable/ic_menu_info_details"
+            android:title="Reports" />
+    </group>
+
+    <item android:title="Account">
+        <menu>
+            <item
+                android:id="@+id/nav_logout"
+                android:icon="@drawable/ic_logout"
+                android:title="Logout" />
+        </menu>
+    </item>
+</menu>

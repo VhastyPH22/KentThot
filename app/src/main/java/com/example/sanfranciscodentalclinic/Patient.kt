@@ -7,5 +7,8 @@ data class Patient(
     val email: String? = null,
     val phone: String? = null,
     val dateOfBirth: String? = null,
-    val gender: String? = null
+    val gender: String? = null,
+    val role: String? = null,
+    val pendingBalance: Double = 0.0,
+    val createdAt: Long = System.currentTimeMillis()
 )

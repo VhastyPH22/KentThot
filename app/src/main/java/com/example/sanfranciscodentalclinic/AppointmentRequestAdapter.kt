@@ -29,8 +29,12 @@ class AppointmentRequestAdapter(
 
     inner class AppointmentViewHolder(private val binding: ItemAppointmentRequestBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(appointment: Appointment) {
+            val price = ProcedurePrices.getPrice(appointment.procedure)
+            
             binding.tvPatientName.text = appointment.patientName
-            binding.tvAppointmentDetails.text = "${appointment.date} at ${appointment.time} for ${appointment.procedure}"
+            binding.tvProcedure.text = appointment.procedure
+            binding.tvAppointmentDetails.text = "${appointment.date} at ${appointment.time}"
+            binding.tvPrice.text = "₱${String.format("%.2f", price)}"
 
             binding.btnAccept.setOnClickListener { onAction(appointment, "Confirmed") }
             binding.btnDecline.setOnClickListener { onAction(appointment, "Cancelled") }

@@ -17,8 +17,6 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var toggle: ActionBarDrawerToggle
 
-    private val DB_URL = "https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)
@@ -63,25 +61,39 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun fetchDashboardData() {
         val uid = auth.currentUser?.uid ?: return
-        val userRef = FirebaseDatabase.getInstance(DB_URL).getReference("Users").child(uid)
+        val userRef = FirebaseDatabase.getInstance("https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Users").child(uid)
 
         userRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val name = snapshot.child("fullName").value?.toString() ?: "User"
-                binding.tvWelcomeUser.text = "Hello, ${name.lowercase()} 👋"
-                binding.tvBalance.text = "₱${snapshot.child("pendingBalance").value ?: "0"}"
+                // Support both "name" field (admin/dentist/assistant) and "firstName"/"lastName" fields (patients)
+                val firstName = snapshot.child("firstName").value?.toString() ?: ""
+                val lastName = snapshot.child("lastName").value?.toString() ?: ""
+                val fullName = snapshot.child("name").value?.toString() ?: ""
+                
+                val name = when {
+                    fullName.isNotEmpty() -> fullName
+                    firstName.isNotEmpty() || lastName.isNotEmpty() -> "$firstName $lastName".trim()
+                    else -> "User"
+                }
+                
+                val pendingBalance = snapshot.child("pendingBalance").getValue(Double::class.java) ?: 0.0
+
+                binding.tvWelcomeUser.text = "Hello, $name 👋"
+                binding.tvBalance.text = "₱${String.format("%.2f", pendingBalance)}"
 
                 val headerView = binding.navView.getHeaderView(0)
                 headerView.findViewById<TextView>(R.id.tvHeaderName).text = name
                 headerView.findViewById<TextView>(R.id.tvHeaderEmail).text = auth.currentUser?.email
             }
-            override fun onCancelled(error: DatabaseError) {}
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@DashboardActivity, "Failed to load user data", Toast.LENGTH_SHORT).show()
+            }
         })
     }
 
     private fun fetchNextAppointment() {
         val uid = auth.currentUser?.uid ?: return
-        val appointmentsRef = FirebaseDatabase.getInstance(DB_URL).getReference("Appointments")
+        val appointmentsRef = FirebaseDatabase.getInstance("https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Appointments")
 
         val query = appointmentsRef.orderByChild("patientId").equalTo(uid)
 
@@ -90,7 +102,7 @@ class DashboardActivity : AppCompatActivity() {
                 var latestAppointment: DataSnapshot? = null
                 for (appointmentSnapshot in snapshot.children) {
                     if (appointmentSnapshot.child("status").value == "Confirmed") {
-                        if (latestAppointment == null || 
+                        if (latestAppointment == null ||
                             appointmentSnapshot.child("date").value.toString() > latestAppointment.child("date").value.toString() ||
                             (appointmentSnapshot.child("date").value.toString() == latestAppointment.child("date").value.toString() &&
                              appointmentSnapshot.child("time").value.toString() > latestAppointment.child("time").value.toString())) {

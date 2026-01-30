@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F8FAFC">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:title="Payment"
+        app:titleTextColor="@android:color/white"
+        app:navigationIcon="@drawable/ic_back" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Payment Summary Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Payment Summary"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#0D1B3E" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#E0E0E0"
+                        android:layout_marginVertical="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Procedure:"
+                            android:textColor="#666666" />
+
+                        <TextView
+                            android:id="@+id/tvProcedure"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Cleaning"
+                            android:textStyle="bold"
+                            android:textColor="#0D1B3E" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Amount Due:"
+                            android:textColor="#666666" />
+
+                        <TextView
+                            android:id="@+id/tvAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₱500.00"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:textColor="#4CAF50" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Payment Method Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Select Payment Method"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#0D1B3E"
+                        android:layout_marginBottom="16dp" />
+
+                    <RadioGroup
+                        android:id="@+id/rgPaymentMethod"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <RadioButton
+                            android:id="@+id/rbGcash"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="GCash"
+                            android:padding="12dp"
+                            android:checked="true" />
+
+                        <RadioButton
+                            android:id="@+id/rbCash"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Cash (Pay at Clinic)"
+                            android:padding="12dp" />
+
+                        <RadioButton
+                            android:id="@+id/rbCard"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Credit/Debit Card"
+                            android:padding="12dp" />
+
+                    </RadioGroup>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- GCash Details Card (shown when GCash is selected) -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardGcashDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                android:layout_marginBottom="16dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GCash Details"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#0D1B3E"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="GCash Number"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etGcashNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="phone"
+                            android:maxLength="11" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Card Details (shown when Card is selected) -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardCardDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Card Details"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#0D1B3E"
+                        android:layout_marginBottom="12dp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Card Number"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_marginBottom="8dp">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etCardNumber"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:maxLength="16" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="Expiry (MM/YY)"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_marginEnd="8dp">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etExpiry"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLength="5" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="CVV"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etCvv"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="numberPassword"
+                                android:maxLength="3" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Pay Button -->
+            <Button
+                android:id="@+id/btnPay"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:text="Pay Now"
+                android:textSize="16sp"
+                android:layout_marginTop="16dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="This is a payment simulation for demo purposes."
+                android:textAlignment="center"
+                android:textSize="12sp"
+                android:textColor="#888888"
+                android:layout_marginTop="16dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

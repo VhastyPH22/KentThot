@@ -1,12 +1,17 @@
 package com.example.sanfranciscodentalclinic
 
+import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sanfranciscodentalclinic.databinding.ItemAppointmentScheduleBinding
 
 class DentistScheduleAdapter(
-    private var appointments: MutableList<Appointment>
+    private var appointments: MutableList<Appointment>,
+    private val onCompleteClick: ((Appointment) -> Unit)? = null
 ) : RecyclerView.Adapter<DentistScheduleAdapter.ScheduleViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ScheduleViewHolder {
@@ -30,6 +35,26 @@ class DentistScheduleAdapter(
         fun bind(appointment: Appointment) {
             binding.tvPatientName.text = appointment.patientName
             binding.tvAppointmentDetails.text = "${appointment.date} at ${appointment.time} for ${appointment.procedure}"
+            
+            // Show price
+            val price = ProcedurePrices.getPrice(appointment.procedure)
+            binding.tvPrice.text = "₱${String.format("%.2f", price)}"
+            
+            // Show/hide complete button based on status
+            if (appointment.status == "Confirmed" && onCompleteClick != null) {
+                binding.btnComplete.visibility = View.VISIBLE
+                binding.btnComplete.setOnClickListener { onCompleteClick.invoke(appointment) }
+                binding.tvStatus.text = "Confirmed"
+                binding.tvStatus.setTextColor(Color.parseColor("#2196F3"))
+            } else {
+                binding.btnComplete.visibility = View.GONE
+                binding.tvStatus.text = appointment.status
+                when (appointment.status) {
+                    "Completed" -> binding.tvStatus.setTextColor(Color.parseColor("#4CAF50"))
+                    "Cancelled" -> binding.tvStatus.setTextColor(Color.parseColor("#F44336"))
+                    else -> binding.tvStatus.setTextColor(Color.parseColor("#666666"))
+                }
+            }
         }
     }
 }

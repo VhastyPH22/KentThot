@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import com.example.sanfranciscodentalclinic.databinding.ActivityDentistDashboardBinding
@@ -18,12 +19,10 @@ class DentistDashboardActivity : AppCompatActivity() {
     private lateinit var auth: FirebaseAuth
     private lateinit var toggle: ActionBarDrawerToggle
     private lateinit var adapter: DentistScheduleAdapter
-    private val appointmentsRef = FirebaseDatabase.getInstance(DB_URL).getReference("Appointments")
-    private val usersRef = FirebaseDatabase.getInstance(DB_URL).getReference("Users")
-
-    companion object {
-        private const val DB_URL = "https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app"
-    }
+    
+    private val database = FirebaseDatabase.getInstance("https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app")
+    private val appointmentsRef = database.getReference("Appointments")
+    private val usersRef = database.getReference("Users")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,8 +42,62 @@ class DentistDashboardActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = DentistScheduleAdapter(mutableListOf())
+        adapter = DentistScheduleAdapter(mutableListOf()) { appointment ->
+            showCompleteConfirmation(appointment)
+        }
         binding.recyclerView.adapter = adapter
+    }
+
+    private fun showCompleteConfirmation(appointment: Appointment) {
+        val price = ProcedurePrices.getPrice(appointment.procedure)
+        
+        AlertDialog.Builder(this)
+            .setTitle("Complete Appointment")
+            .setMessage("Mark this appointment as completed?\n\nPatient: ${appointment.patientName}\nProcedure: ${appointment.procedure}\nCharge: ₱${String.format("%.2f", price)}\n\nThis will add ₱${String.format("%.2f", price)} to the patient's balance.")
+            .setPositiveButton("Complete") { _, _ ->
+                completeAppointment(appointment, price)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun completeAppointment(appointment: Appointment, price: Double) {
+        // Update appointment status
+        appointmentsRef.child(appointment.appointmentId).child("status").setValue("Completed")
+            .addOnSuccessListener {
+                // Add charge to patient's balance
+                addChargeToPatient(appointment.patientId, price, appointment.procedure)
+                Toast.makeText(this, "Appointment marked as completed", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to update appointment", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun addChargeToPatient(patientId: String, amount: Double, procedure: String) {
+        usersRef.child(patientId).child("pendingBalance").get().addOnSuccessListener { snapshot ->
+            val currentBalance = snapshot.getValue(Double::class.java) ?: 0.0
+            val newBalance = currentBalance + amount
+            usersRef.child(patientId).child("pendingBalance").setValue(newBalance)
+            
+            // Record transaction
+            val transactionsRef = database.getReference("Transactions")
+            val transactionId = transactionsRef.push().key ?: return@addOnSuccessListener
+            
+            val transaction = Transaction(
+                transactionId = transactionId,
+                patientId = patientId,
+                appointmentId = "",
+                amount = amount,
+                type = "charge",
+                description = "Charge for $procedure",
+                paymentMethod = "",
+                status = "pending",
+                createdAt = System.currentTimeMillis(),
+                processedBy = auth.currentUser?.uid ?: ""
+            )
+            transactionsRef.child(transactionId).setValue(transaction)
+        }
     }
 
     private fun fetchConfirmedAppointments() {
@@ -56,16 +109,22 @@ class DentistDashboardActivity : AppCompatActivity() {
                 for (appointmentSnapshot in snapshot.children) {
                     val appointment = appointmentSnapshot.getValue(Appointment::class.java)
                     if (appointment != null) {
-                        // Fetch patient name and add it to a list of jobs
-                        val task = usersRef.child(appointment.patientId).child("fullName").get()
+                        val task = usersRef.child(appointment.patientId).get()
                         userFetchJobs.add(Pair(appointment, task))
-                        task.addOnSuccessListener {
-                            appointment.patientName = it.value.toString()
+                        task.addOnSuccessListener { userSnapshot ->
+                            val firstName = userSnapshot.child("firstName").value?.toString() ?: ""
+                            val lastName = userSnapshot.child("lastName").value?.toString() ?: ""
+                            val fullName = userSnapshot.child("name").value?.toString() ?: ""
+                            
+                            appointment.patientName = when {
+                                fullName.isNotEmpty() -> fullName
+                                firstName.isNotEmpty() || lastName.isNotEmpty() -> "$firstName $lastName".trim()
+                                else -> "Unknown Patient"
+                            }
                         }
                     }
                 }
-                
-                // Once all user names are fetched, sort and update the adapter
+
                 Tasks.whenAll(userFetchJobs.map { it.second }).addOnSuccessListener {
                     val sortedAppointments = userFetchJobs.map { it.first }.sortedWith(compareBy({ it.date }, { it.time }))
                     adapter.updateAppointments(sortedAppointments)

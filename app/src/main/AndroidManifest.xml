@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Required for Firebase to communicate with servers -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -27,6 +30,12 @@
 
         </activity>
         <activity android:name=".SignUpActivity" />
+        <activity android:name=".BookAppointmentActivity" />
+        <activity android:name=".MyVisitsActivity" />
+        <activity android:name=".PaymentActivity" />
+        <activity android:name=".DentistDashboardActivity" />
+        <activity android:name=".AssistantDashboardActivity" />
+        <activity android:name=".AdminDashboardActivity" />
 
     </application>
 

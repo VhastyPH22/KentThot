@@ -64,9 +64,12 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.database)
+
+    // Firebase - using BOM for version management
+    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-analytics")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -76,9 +79,4 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation("com.google.android.material:material:1.12.0")
-
-
-
-    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
-    implementation("com.google.firebase:firebase-analytics")
 }
