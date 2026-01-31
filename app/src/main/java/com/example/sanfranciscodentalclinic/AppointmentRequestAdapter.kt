@@ -1,5 +1,6 @@
 package com.example.sanfranciscodentalclinic
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +17,7 @@ class AppointmentRequestAdapter(
     }
 
     override fun onBindViewHolder(holder: AppointmentViewHolder, position: Int) {
+        Log.d("AppointmentRequestAdapter", "Binding appointment: ${appointments[position]}")
         holder.bind(appointments[position])
     }
 
@@ -37,7 +39,6 @@ class AppointmentRequestAdapter(
             binding.tvPrice.text = "₱${String.format("%.2f", price)}"
 
             binding.btnAccept.setOnClickListener { onAction(appointment, "Confirmed") }
-            binding.btnDecline.setOnClickListener { onAction(appointment, "Cancelled") }
         }
     }
 }

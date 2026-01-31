@@ -9,9 +9,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.sanfranciscodentalclinic.databinding.ActivityBookAppointmentBinding
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.*
+
+// --- SIMULATION ONLY ---
+// This companion object holds a fake in-memory database for the simulation.
+object SimulatedData { 
+    val appointments = mutableListOf<Appointment>() 
+}
+// --- END SIMULATION ---
 
 class BookAppointmentActivity : AppCompatActivity() {
 
@@ -20,8 +26,6 @@ class BookAppointmentActivity : AppCompatActivity() {
     private val calendar = Calendar.getInstance()
     
     private val procedures = arrayOf("Cleaning", "Whitening", "Extraction", "Consultation", "Root Canal", "Filling", "Braces Adjustment", "Dental X-Ray")
-
-    val appointmentsRef = FirebaseDatabase.getInstance("https://dental-clinic-f32da-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("Appointments")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,13 +49,11 @@ class BookAppointmentActivity : AppCompatActivity() {
     }
 
     private fun setupSpinners() {
-        // Time Spinner
         val timeSlots = arrayOf("09:00 AM", "10:00 AM", "11:00 AM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM")
         val timeAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, timeSlots)
         timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerTime.adapter = timeAdapter
 
-        // Procedure Spinner with prices
         val proceduresWithPrices = procedures.map { 
             "$it - ₱${String.format("%.2f", ProcedurePrices.getPrice(it))}"
         }.toTypedArray()
@@ -78,10 +80,12 @@ class BookAppointmentActivity : AppCompatActivity() {
             calendar.set(Calendar.YEAR, year)
             calendar.set(Calendar.MONTH, month)
             calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-            updateDateInView()
+            
+            val myFormat = "yyyy-MM-dd"
+            val sdf = SimpleDateFormat(myFormat, Locale.US)
+            binding.tvSelectedDate.text = sdf.format(calendar.time)
         }
         
-        // Set minimum date to today
         val datePicker = DatePickerDialog(
             this,
             dateSetListener,
@@ -93,51 +97,40 @@ class BookAppointmentActivity : AppCompatActivity() {
         datePicker.show()
     }
 
-    private fun updateDateInView() {
-        val myFormat = "yyyy-MM-dd"
-        val sdf = SimpleDateFormat(myFormat, Locale.US)
-        binding.tvSelectedDate.text = sdf.format(calendar.time)
-    }
-
     private fun submitAppointment() {
-        val patientId = auth.currentUser?.uid
-        if (patientId == null) {
-            Toast.makeText(this, "You must be logged in to book an appointment", Toast.LENGTH_SHORT).show()
-            return
-        }
+        val patientId = auth.currentUser?.uid ?: "simulated_user"
 
-        val selectedDate = binding.tvSelectedDate.text.toString()
-        if (selectedDate == "No date selected") {
+        if (binding.tvSelectedDate.text == "No date selected") {
             Toast.makeText(this, "Please select a date", Toast.LENGTH_SHORT).show()
             return
         }
 
         val selectedTime = binding.spinnerTime.selectedItem.toString()
         val selectedProcedure = procedures[binding.spinnerProcedure.selectedItemPosition]
-
-        val appointmentId = appointmentsRef.push().key
-
-        if (appointmentId == null) {
-            Toast.makeText(this, "Failed to create appointment. Please try again.", Toast.LENGTH_SHORT).show()
-            return
+        
+        val sdf = SimpleDateFormat("hh:mm a", Locale.US)
+        val date = sdf.parse(selectedTime)
+        val timeCalendar = Calendar.getInstance()
+        if (date != null) {
+            timeCalendar.time = date
         }
+        calendar.set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY))
+        calendar.set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE))
 
-        val appointment = hashMapOf(
-            "appointmentId" to appointmentId,
-            "patientId" to patientId,
-            "date" to selectedDate,
-            "time" to selectedTime,
-            "procedure" to selectedProcedure,
-            "status" to "Pending"
+        // --- SIMULATION ONLY ---
+        val newAppointment = Appointment(
+            appointmentId = UUID.randomUUID().toString(),
+            patientId = patientId,
+            patientName = "Simulated Patient", // In a real app, you'd get this from user data
+            procedure = selectedProcedure,
+            status = "Pending",
+            timestamp = calendar.timeInMillis
         )
 
-        appointmentsRef.child(appointmentId).setValue(appointment)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Appointment booked successfully!", Toast.LENGTH_SHORT).show()
-                finish() // Go back to the dashboard
-            }
-            .addOnFailureListener {
-                Toast.makeText(this, "Failed to book appointment: ${it.message}", Toast.LENGTH_SHORT).show()
-            }
+        SimulatedData.appointments.add(newAppointment)
+        
+        Toast.makeText(this, "Appointment booked successfully! (Simulation)", Toast.LENGTH_SHORT).show()
+        finish()
+        // --- END SIMULATION ---
     }
 }

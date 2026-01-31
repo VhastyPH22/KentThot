@@ -4,8 +4,6 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.sanfranciscodentalclinic.databinding.ItemAppointmentScheduleBinding
 
@@ -36,11 +34,9 @@ class DentistScheduleAdapter(
             binding.tvPatientName.text = appointment.patientName
             binding.tvAppointmentDetails.text = "${appointment.date} at ${appointment.time} for ${appointment.procedure}"
             
-            // Show price
             val price = ProcedurePrices.getPrice(appointment.procedure)
             binding.tvPrice.text = "₱${String.format("%.2f", price)}"
             
-            // Show/hide complete button based on status
             if (appointment.status == "Confirmed" && onCompleteClick != null) {
                 binding.btnComplete.visibility = View.VISIBLE
                 binding.btnComplete.setOnClickListener { onCompleteClick.invoke(appointment) }
